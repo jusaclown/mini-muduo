@@ -29,7 +29,12 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 # ---------------------------------------------------------------------------------------
 # Build binaries
 # ---------------------------------------------------------------------------------------
-add_executable(main src/main.cc src/TcpServer.cc)
+add_executable(main 
+    src/main.cc 
+    src/TcpServer.cc
+    src/Channel.cc
+)
 muduo_enable_warnings(main)
+muduo_enable_sanitizer(main)
 
 target_include_directories(main PUBLIC ${PROJECT_SOURCE_DIR})
