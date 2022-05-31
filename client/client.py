@@ -11,7 +11,7 @@ class myThread (threading.Thread):
 
     def run(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(("localhost", 8888))
+        s.connect(("localhost", 10086))
 
         msg = "lalalala demaxiya"
         s.send(msg.encode("utf-8"))

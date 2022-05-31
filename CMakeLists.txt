@@ -33,6 +33,8 @@ add_executable(main
     src/main.cc 
     src/TcpServer.cc
     src/Channel.cc
+    src/Acceptor.cc
+    src/TcpConnection.cc
 )
 muduo_enable_warnings(main)
 muduo_enable_sanitizer(main)
