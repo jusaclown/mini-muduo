@@ -18,7 +18,8 @@ Channel对象负责文件描述符的IO事件分发，它不拥有文件描述�
 
 ## v0.4
 在v0.3中，TcpServer既要处理监听套接字，又要处理客户端连接，在此版本中，我们加入Acceptor和TcpConnection，将上述两个分别封装至对应的类。  
-Acceptor用于accept新TCP连接，并通过回调通知使用者，
+* Acceptor用于创建监听套接字并accept新TCP连接，新连接到来之后则交由回调函数处理。
+* TcpConnection则表示一个连接对象。
 
 ![](./picture/listen%E5%8F%AF%E8%AF%BB.jpg)
 
