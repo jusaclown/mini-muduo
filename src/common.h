@@ -11,8 +11,9 @@ class Channel;
 class TcpConnection;
 
 using tcp_conn_ptr = std::shared_ptr<TcpConnection>;
-using message_callback = std::function<void(tcp_conn_ptr, char*, ssize_t)>;
-using close_callback = std::function<void(tcp_conn_ptr)>;
+using message_callback = std::function<void(const tcp_conn_ptr&, char*, ssize_t)>;
+using connection_callback = std::function<void(const tcp_conn_ptr&)>;
+using close_callback = std::function<void(const tcp_conn_ptr&)>;
 
 using event_list = std::vector<struct epoll_event>;
 using channel_map = std::map<int, Channel*>;

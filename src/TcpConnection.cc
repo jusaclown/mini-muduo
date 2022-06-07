@@ -10,13 +10,18 @@ TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_
     , peer_addr_(peer_addr)
 {
     channel_->set_read_callback(std::bind(&TcpConnection::handle_read_, this));
-    channel_->enable_reading();
 }
 
 TcpConnection::~TcpConnection()
 {
     if (sockfd_ != -1)
         ::close(sockfd_);
+}
+
+void TcpConnection::connect_established()
+{
+    channel_->enable_reading();
+    connection_callback_(shared_from_this());
 }
 
 void TcpConnection::handle_read_()

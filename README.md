@@ -28,4 +28,7 @@ Channel对象负责文件描述符的IO事件分发，它不拥有文件描述�
 此前，TcpServer一直充当着EventLoop的角色
 * EpollPoller 创建epoll对象，epoll_wait活动fd，将fd转成Channel返回给调用对象。
 
+## v0.6
+包装成库，库与库的用户分离
+
 > 框架负责从套接字读取数据给用户或者把用户的数据通过套接字发送出去

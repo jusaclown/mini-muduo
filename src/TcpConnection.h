@@ -25,8 +25,15 @@ public:
         close_callback_ = std::move(cb);
     }
 
+    void set_connection_callback(connection_callback cb)
+    {
+        connection_callback_ = std::move(cb);
+    }
+        
     int fd() const { return sockfd_; }
     struct sockaddr_in peer_addr() const { return peer_addr_; }
+
+    void connect_established();
 
 private:
     void handle_read_();
@@ -39,6 +46,7 @@ private:
     int sockfd_;
     std::unique_ptr<Channel> channel_;
     struct sockaddr_in peer_addr_;
-    message_callback message_callback_;
-    close_callback close_callback_;
+    message_callback message_callback_;         /* 消息到来 */
+    close_callback close_callback_;             /* 连接的断开 */
+    connection_callback connection_callback_;   /* 连接的建立 */
 };

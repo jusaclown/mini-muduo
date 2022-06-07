@@ -1,0 +1,5 @@
+add_executable(echo_server echo_server.cc)
+target_link_libraries(echo_server PRIVATE mini_muduo)
+muduo_enable_warnings(echo_server)
+muduo_enable_sanitizer(echo_server)
+

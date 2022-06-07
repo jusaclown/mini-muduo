@@ -27,10 +27,9 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # ---------------------------------------------------------------------------------------
-# Build binaries
+# Static library
 # ---------------------------------------------------------------------------------------
-add_executable(main 
-    src/main.cc 
+add_library(mini_muduo STATIC     
     src/TcpServer.cc
     src/Channel.cc
     src/Acceptor.cc
@@ -38,7 +37,12 @@ add_executable(main
     src/EpollPoller.cc
     src/EventLoop.cc
 )
-muduo_enable_warnings(main)
-muduo_enable_sanitizer(main)
+muduo_enable_warnings(mini_muduo)
+target_include_directories(mini_muduo PUBLIC ${PROJECT_SOURCE_DIR})
 
-target_include_directories(main PUBLIC ${PROJECT_SOURCE_DIR})
+# ---------------------------------------------------------------------------------------
+# Build binaries
+# ---------------------------------------------------------------------------------------
+message(STATUS "Generating tests")
+add_subdirectory(tests)
+
