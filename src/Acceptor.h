@@ -1,13 +1,14 @@
 #pragma once
 
-#include "src/TcpServer.h"
+#include "src/EventLoop.h"
+#include "src/Channel.h"
 
 class Acceptor
 {
 public:
     using new_connection_callback = std::function<void(int sockfd, struct sockaddr_in addr)>;
     
-    Acceptor(TcpServer* tcp_ptr, std::string ip, uint16_t port);
+    Acceptor(EventLoop* loop, std::string ip, uint16_t port);
     ~Acceptor();
 
     Acceptor(const Acceptor&) = delete;
@@ -26,7 +27,7 @@ private:
 private:
     static const int kMaxListen = 10;
     
-    TcpServer* tcp_ptr_;        /* 所属TcpServer */
+    EventLoop* loop_;           /* 所属EventLoop */
     int listenfd_;              /* 监听套接字对应的fd */
     Channel listen_channel_;    /* 监听套接字对应的Channel */
     int idlefd_;                /* 用于防止fd达到上限新的用户无法连接的情况 */

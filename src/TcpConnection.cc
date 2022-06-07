@@ -1,12 +1,12 @@
-#include "TcpConnection.h"
+#include "src/TcpConnection.h"
 
 #include <unistd.h>
 #include <string.h>
 
-TcpConnection::TcpConnection(TcpServer* tcp_ptr, int sockfd, const struct sockaddr_in& peer_addr)
-    : tcp_ptr_(tcp_ptr)
+TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_in& peer_addr)
+    : loop_(loop)
     , sockfd_(sockfd)
-    , channel_(std::make_unique<Channel>(tcp_ptr_, sockfd_))
+    , channel_(std::make_unique<Channel>(loop_, sockfd_))
     , peer_addr_(peer_addr)
 {
     channel_->set_read_callback(std::bind(&TcpConnection::handle_read_, this));

@@ -3,14 +3,14 @@
 #include <functional>
 #include <memory>
 
-class TcpServer;
+class EventLoop;
 
 class Channel
 {
 public:
     using event_callback = std::function<void()>;
     
-    Channel(TcpServer* tcp_ptr, int fd);
+    Channel(EventLoop* loop, int fd);
     ~Channel();
 
     Channel(const Channel&) = delete;
@@ -33,7 +33,7 @@ private:
     void update();
 
 private:
-    TcpServer* tcp_ptr_;    /* 所属TcpServer */
+    EventLoop* loop_;       /* 所属EventLoop */
     const int  fd_;         /* 文件描述符，但不负责关闭该文件描述符 */
     int        events_;     /* 用户关注的事件 */
     int        revents_;    /* epoll 返回的事件 */

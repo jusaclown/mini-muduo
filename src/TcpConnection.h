@@ -9,7 +9,7 @@
 class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
 public:
-    TcpConnection(TcpServer* tcp_ptr, int sockfd, const struct sockaddr_in& peer_addr);
+    TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_in& peer_addr);
     ~TcpConnection();
 
     TcpConnection(const TcpConnection&);
@@ -35,7 +35,7 @@ private:
 private:
     static const size_t kMaxBuffer = 1024;
     
-    TcpServer* tcp_ptr_;
+    EventLoop* loop_;
     int sockfd_;
     std::unique_ptr<Channel> channel_;
     struct sockaddr_in peer_addr_;

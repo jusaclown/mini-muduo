@@ -1,10 +1,10 @@
 #include "src/Channel.h"
-#include "src/TcpServer.h"
+#include "src/EventLoop.h"
 
 #include <sys/epoll.h>
 
-Channel::Channel(TcpServer* tcp_ptr, int fd)
-    : tcp_ptr_(tcp_ptr)
+Channel::Channel(EventLoop* loop, int fd)
+    : loop_(loop)
     , fd_(fd)
     , events_(0)
     , revents_(0)
@@ -29,5 +29,5 @@ void Channel::enable_reading()
 
 void Channel::update()
 {
-    tcp_ptr_->update_channel(this);
+    loop_->update_channel(this);
 }

@@ -11,10 +11,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-Acceptor::Acceptor(TcpServer* tcp_ptr, std::string ip, uint16_t port)
-    : tcp_ptr_(tcp_ptr)
+Acceptor::Acceptor(EventLoop* loop, std::string ip, uint16_t port)
+    : loop_(loop)
     , listenfd_(create_and_bind_(std::move(ip), port))
-    , listen_channel_(tcp_ptr_, listenfd_)
+    , listen_channel_(loop_, listenfd_)
     , idlefd_(::open("dev/null", O_RDONLY | O_CLOEXEC))
 {
     listen_channel_.set_read_callback(std::bind(&Acceptor::handle_read_, this));

@@ -35,6 +35,8 @@ add_executable(main
     src/Channel.cc
     src/Acceptor.cc
     src/TcpConnection.cc
+    src/EpollPoller.cc
+    src/EventLoop.cc
 )
 muduo_enable_warnings(main)
 muduo_enable_sanitizer(main)

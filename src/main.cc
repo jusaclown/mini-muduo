@@ -1,8 +1,10 @@
+#include "src/EventLoop.h"
 #include "src/TcpServer.h"
 
 int main(int argc, char* argv[])
 {
-    TcpServer tcp_server;
+    EventLoop loop;
+    TcpServer tcp_server(&loop);
     tcp_server.start();
     
     return EXIT_SUCCESS;
