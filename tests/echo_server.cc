@@ -2,6 +2,7 @@
 #include "src/TcpServer.h"
 #include "src/common.h"
 #include "src/TcpConnection.h"
+#include "src/Buffer.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -17,13 +18,10 @@ void on_connection(const tcp_conn_ptr& conn)
         conn->fd());
 }
 
-void send_message(const tcp_conn_ptr& conn, char* buffer, ssize_t recv_nums)
+void send_message(const tcp_conn_ptr& conn, Buffer& buffer)
 {
-    ssize_t send_num = send(conn->fd(), buffer, recv_nums, 0);
-    if (send_num != recv_nums)
-    {
-        printf("There was a mistake(send_num != recv_nums), but we decided to continue\n");
-    }
+    std::string msg = buffer.retrieve_all_as_string();
+    conn->send(msg);
 }
 
 int main(int argc, char* argv[])

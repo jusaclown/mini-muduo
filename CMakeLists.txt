@@ -36,6 +36,7 @@ add_library(mini_muduo STATIC
     src/TcpConnection.cc
     src/EpollPoller.cc
     src/EventLoop.cc
+    src/Buffer.cc
 )
 muduo_enable_warnings(mini_muduo)
 target_include_directories(mini_muduo PUBLIC ${PROJECT_SOURCE_DIR})

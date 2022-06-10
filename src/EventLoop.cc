@@ -15,10 +15,10 @@ EventLoop::~EventLoop()
 
 void EventLoop::loop()
 {
-    int count = 0;
+    // int count = 0;
     while (!quit_)
     {
-        ++count;
+        // ++count;
         active_channels_.clear();
         poller_->poller(active_channels_);
 
@@ -28,8 +28,8 @@ void EventLoop::loop()
             channel->handle_event();
         }
 
-        if (count >= 15)
-            break;
+        // if (count >= 15)
+        //     break;
     }
 }
 

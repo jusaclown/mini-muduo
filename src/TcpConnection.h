@@ -2,6 +2,7 @@
 
 #include "src/Channel.h"
 #include "src/common.h"
+#include "src/Buffer.h"
 
 #include <netinet/in.h>
 #include <memory>
@@ -35,8 +36,11 @@ public:
 
     void connect_established();
 
+    void send(const std::string& message);
+
 private:
-    void handle_read_();
+    void handle_read_();    /* 可读事件的回调函数 */
+    void handle_write_();   /* 可写事件的回调函数 */
     void handle_close_();
 
 private:
@@ -46,7 +50,10 @@ private:
     int sockfd_;
     std::unique_ptr<Channel> channel_;
     struct sockaddr_in peer_addr_;
-    message_callback message_callback_;         /* 消息到来 */
-    close_callback close_callback_;             /* 连接的断开 */
-    connection_callback connection_callback_;   /* 连接的建立 */
+    message_callback message_callback_;                 /* 消息到来 */
+    close_callback close_callback_;                     /* 连接的断开 */
+    connection_callback connection_callback_;           /* 连接的建立 */
+    write_complete_callback write_complete_callback_;   /* 消息发送完毕 */
+    Buffer input_buffer_;   /* 接收缓冲区 */
+    Buffer output_buffer_;  /* 发送缓冲区 */
 };

@@ -4,6 +4,9 @@
 #include <sys/epoll.h>
 #include <string.h>
 
+const int kNew = -1;
+const int kAdded = 1;
+
 EpollPoller::EpollPoller(EventLoop* loop)
     : loop_(loop)
     , epollfd_(::epoll_create1(EPOLL_CLOEXEC))
@@ -40,10 +43,24 @@ void EpollPoller::poller(channel_list& active_channels)
 
 void EpollPoller::update_channel(Channel* channel)
 {
-    struct epoll_event ev;
-    memset(&ev, 0, sizeof(ev));
-    ev.data.ptr = channel;
-    ev.events = channel->events();
-    if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, channel->fd(), &ev) < 0)
-        handle_err("epoll_ctl");    
+    const int idx = channel->index();
+    if (idx == kNew)
+    {
+        channel->set_index(kAdded);
+        struct epoll_event ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.data.ptr = channel;
+        ev.events = channel->events();
+        if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, channel->fd(), &ev) < 0)
+            handle_err("epoll_ctl");  
+    }
+    else
+    {
+        struct epoll_event ev;
+        memset(&ev, 0, sizeof(ev));
+        ev.data.ptr = channel;
+        ev.events = channel->events();        
+        if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, channel->fd(), &ev) < 0)
+            handle_err("epoll_ctl"); 
+    }
 }
