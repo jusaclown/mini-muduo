@@ -1,6 +1,20 @@
 #include "src/EventLoop.h"
 #include "src/EpollPoller.h"
 
+#include <signal.h>
+
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+class IgnoreSigPipe
+{
+public:
+    IgnoreSigPipe()
+    {
+        ::signal(SIGPIPE, SIG_IGN);
+    }
+};
+#pragma GCC diagnostic error "-Wold-style-cast"
+IgnoreSigPipe init_obj;
+
 EventLoop::EventLoop()
     : quit_(false)
     , poller_(std::make_unique<EpollPoller>(this))

@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <netinet/tcp.h>
 
 TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_in& peer_addr)
     : loop_(loop)
@@ -10,7 +11,8 @@ TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_
     , peer_addr_(peer_addr)
 {
     channel_->set_read_callback(std::bind(&TcpConnection::handle_read_, this));
-    
+    channel_->set_write_callback(std::bind(&TcpConnection::handle_write_, this));
+    set_keep_alive(true);
 }
 
 TcpConnection::~TcpConnection()
@@ -28,13 +30,22 @@ void TcpConnection::connect_established()
 void TcpConnection::send(const std::string& message)
 {
     ssize_t nwrote = 0;
+    size_t remaining = message.size();
     /* 如果fd没有关注可写事件并且输出缓冲区无数据，则直接发送 
        ? !channel_->is_writing() 这里是针对什么情况，只用后面的判定不行吗？
      */
     if (!channel_->is_writing() && output_buffer_.readable_bytes() == 0)
     {
         nwrote = ::send(channel_->fd(), message.data(), message.size(), 0);
-        if (nwrote < 0)
+        if (nwrote >= 0)
+        {
+            remaining -= nwrote;
+            if (remaining == 0 && write_complete_callback_)
+            {
+                write_complete_callback_(shared_from_this());
+            }
+        }
+        else /* nwrote < 0 */
         {
             nwrote = 0;
             printf("There was a mistake(send_num != recv_nums), but we decided to continue\n");
@@ -43,12 +54,24 @@ void TcpConnection::send(const std::string& message)
 
     assert(nwrote >= 0);
     /* 如果没有发送完，则将剩余数据添加到输出缓冲区并关注可写事件 */
-    if (static_cast<size_t>(nwrote) < message.size())
+    if (remaining > 0)
     {
         output_buffer_.append(message.data() + nwrote, message.size() - nwrote);
         if (!channel_->is_writing())
             channel_->enable_writing();
     }
+}
+
+void TcpConnection::set_tcp_no_delay(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_, IPPROTO_TCP, TCP_NODELAY, &optval, static_cast<socklen_t>(sizeof(optval)));
+}
+
+void TcpConnection::set_keep_alive(bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd_,  SOL_SOCKET, SO_KEEPALIVE, &optval, static_cast<socklen_t>(sizeof(optval)));
 }
 
 void TcpConnection::handle_read_()
@@ -78,6 +101,10 @@ void TcpConnection::handle_write_()
             if (output_buffer_.readable_bytes() == 0)
             {
                 channel_->disable_writing();
+                if (write_complete_callback_)
+                {
+                    write_complete_callback_(shared_from_this());
+                }
             }
             else
             {

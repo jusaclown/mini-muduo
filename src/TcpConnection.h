@@ -30,13 +30,21 @@ public:
     {
         connection_callback_ = std::move(cb);
     }
-        
+
+    void set_write_complete_callback(write_complete_callback cb)
+    {
+        write_complete_callback_ = std::move(cb);
+    }
+
     int fd() const { return sockfd_; }
     struct sockaddr_in peer_addr() const { return peer_addr_; }
 
     void connect_established();
 
     void send(const std::string& message);
+
+    void set_tcp_no_delay(bool on);
+    void set_keep_alive(bool on);
 
 private:
     void handle_read_();    /* 可读事件的回调函数 */

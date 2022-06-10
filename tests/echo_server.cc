@@ -26,6 +26,7 @@ void send_message(const tcp_conn_ptr& conn, Buffer& buffer)
 
 int main(int argc, char* argv[])
 {
+    printf("Echo Server is running...\n");
     EventLoop loop;
     TcpServer tcp_server(&loop);
     tcp_server.set_connection_callback(on_connection);

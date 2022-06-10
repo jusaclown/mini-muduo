@@ -18,7 +18,7 @@ class myThread (threading.Thread):
         n = len(self.msg)
         recv_len = 0
         while (n != 0):
-            msg = s.recv(4096).decode()
+            msg = s.recv(66560).decode()
             recv_len += len(msg)
             print("{} recv: '{}', len = {}, total_len = {}\n".format(self.name, msg, len(msg), recv_len))
             n -= len(msg)
@@ -28,8 +28,8 @@ class myThread (threading.Thread):
         print(self.name, " is over")
 
 # 创建新线程
-thread1 = myThread("Thread-1", 2, "lalalala demaxiya")
-thread2 = myThread("Thread-2", 5, "lalalala demaxiya "*10000)
+thread1 = myThread("Thread-1", 2, "lalalala demaxiya "*100000)
+thread2 = myThread("Thread-2", 5, "lalalala lulalula "*100000)
 
 # 开启新线程
 thread1.start()

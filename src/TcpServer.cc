@@ -41,6 +41,7 @@ void TcpServer::handle_listenfd_(int clientfd, struct sockaddr_in client_addr)
     conn->set_message_callback(message_callback_);
     conn->set_connection_callback(connection_callback_);
     conn->set_close_callback(std::bind(&TcpServer::remove_connection_, this, _1));
+    conn->set_write_complete_callback(write_complete_callback_);
     connections_[clientfd] = conn;
 
     conn->connect_established();
