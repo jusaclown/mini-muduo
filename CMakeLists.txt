@@ -37,6 +37,8 @@ add_library(mini_muduo STATIC
     src/EpollPoller.cc
     src/EventLoop.cc
     src/Buffer.cc
+    src/Timer.cc
+    src/TimerQueue.cc
 )
 muduo_enable_warnings(mini_muduo)
 target_include_directories(mini_muduo PUBLIC ${PROJECT_SOURCE_DIR})

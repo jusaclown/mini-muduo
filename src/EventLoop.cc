@@ -1,5 +1,6 @@
 #include "src/EventLoop.h"
 #include "src/EpollPoller.h"
+#include "src/TimerQueue.h"
 
 #include <signal.h>
 
@@ -18,6 +19,7 @@ IgnoreSigPipe init_obj;
 EventLoop::EventLoop()
     : quit_(false)
     , poller_(std::make_unique<EpollPoller>(this))
+    , timer_queue_(std::make_unique<TimerQueue>(this))
 {
     
 }
@@ -55,4 +57,24 @@ void EventLoop::update_channel(Channel* channel)
 void EventLoop::quit()
 {
     quit_ = true;
+}
+
+TimerId EventLoop::run_at(timer_clock::time_point time, timer_callback cb)
+{
+    return timer_queue_->add_timer(std::move(cb), time, timer_clock::duration::zero());
+}
+
+TimerId EventLoop::run_after(timer_clock::duration delay, timer_callback cb)
+{
+    return run_at(timer_clock::now() + delay, std::move(cb));
+}
+
+TimerId EventLoop::run_every(timer_clock::duration interval, timer_callback cb)
+{
+    return timer_queue_->add_timer(std::move(cb), timer_clock::now() + interval, interval);
+}
+
+void EventLoop::cancel(TimerId timerid)
+{
+    timer_queue_->cancel(timerid);
 }
