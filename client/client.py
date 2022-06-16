@@ -24,19 +24,25 @@ class myThread (threading.Thread):
             n -= len(msg)
 
         time.sleep(self.delay)
+        if (self.name == "Thread-3"):
+            s.send(self.msg.encode("utf-8"))
+            time.sleep(self.delay*2)
         s.close()
         print(self.name, " is over")
 
 # 创建新线程
-thread1 = myThread("Thread-1", 2, "lalalala demaxiya "*100000)
-thread2 = myThread("Thread-2", 5, "lalalala lulalula "*100000)
+thread1 = myThread("Thread-1", 2, "lalalala demaxiya "*10)      # 2s close
+thread2 = myThread("Thread-2", 10, "lalalala lulalula "*10)     # 5s shutdown 10s close
+thread3 = myThread("Thread-3", 3, "lalalala lulalula "*10)      # 8s shutdown 9s close
 
 # 开启新线程
 thread1.start()
 thread2.start()
+thread3.start()
 
 # 等待所有线程完成
 thread1.join()
 thread2.join()
+thread3.join()
 
 print ("退出主线程")

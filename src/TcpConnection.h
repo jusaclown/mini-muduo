@@ -6,6 +6,8 @@
 
 #include <netinet/in.h>
 #include <memory>
+#include <any>
+#include <atomic>
 
 class TcpConnection : public std::enable_shared_from_this<TcpConnection>
 {
@@ -42,18 +44,30 @@ public:
     void connect_established();
 
     void send(const std::string& message);
+    void shutdown();
 
     void set_tcp_no_delay(bool on);
     void set_keep_alive(bool on);
 
-private:
+    void set_context(const std::any& context) { context_ = context; }
+    const std::any& get_context() const { return context_; }
+    std::any* get_mutable_context() { return &context_; }
+
+    bool connected() const { return state_.load(std::memory_order_relaxed) == kConnected; }
+    bool disconnected() const { return state_.load(std::memory_order_relaxed) == kDisconnected; }
+
+private:   
     void handle_read_();    /* 可读事件的回调函数 */
     void handle_write_();   /* 可写事件的回调函数 */
     void handle_close_();
 
+    enum tcp_state_num { kDisconnected, kConnecting, kConnected, kDisconnecting };
+    void set_state(tcp_state_num state) { state_.store(state, std::memory_order_relaxed); }
+
+
 private:
     static const size_t kMaxBuffer = 1024;
-    
+
     EventLoop* loop_;
     int sockfd_;
     std::unique_ptr<Channel> channel_;
@@ -64,4 +78,6 @@ private:
     write_complete_callback write_complete_callback_;   /* 消息发送完毕 */
     Buffer input_buffer_;   /* 接收缓冲区 */
     Buffer output_buffer_;  /* 发送缓冲区 */
+    std::atomic<tcp_state_num> state_;
+    std::any context_;
 };

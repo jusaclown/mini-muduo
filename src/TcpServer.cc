@@ -43,11 +43,13 @@ void TcpServer::handle_listenfd_(int clientfd, struct sockaddr_in client_addr)
     conn->set_close_callback(std::bind(&TcpServer::remove_connection_, this, _1));
     conn->set_write_complete_callback(write_complete_callback_);
     connections_[clientfd] = conn;
-
+    
     conn->connect_established();
 }
 
 void TcpServer::remove_connection_(const tcp_conn_ptr& conn)
 {
-    connections_.erase(conn->fd());
+    size_t n = connections_.erase(conn->fd());
+    (void)n;
+    assert(n == 1);
 }

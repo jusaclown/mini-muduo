@@ -12,8 +12,10 @@ EventLoop* g_loop;
 
 void print(const std::string& msg)
 {
-    std::cout << timer_clock::now().time_since_epoch().count() << " " << msg << std::endl;
-    
+    static auto time = timer_clock::now().time_since_epoch().count();
+    auto now = timer_clock::now().time_since_epoch().count();
+    std::cout << now << " " << msg << ", 距离上一次 " << (now - time)/1000000000.0 << std::endl;
+    time = now;
     if (++count == 20)
         g_loop->quit();
 }
@@ -22,6 +24,13 @@ void cancel(TimerId timer)
 {
     g_loop->cancel(timer);
     std::cout << "calcel at " << timer_clock::now().time_since_epoch().count() << std::endl;
+}
+
+TimerId to_cancel;
+void cancel_self()
+{
+    std::cout << "cancel self" << std::endl;
+    g_loop->cancel(to_cancel);
 }
 
 int main()
@@ -41,7 +50,8 @@ int main()
     loop.run_after(milliseconds(4800), std::bind(cancel, t45));
     loop.run_every(milliseconds(2000), std::bind(print, "run every 2s"));
     TimerId te3 = loop.run_every(milliseconds(3000), std::bind(print, "run every 3s"));
-    loop.run_after(milliseconds(9001), std::bind(cancel, te3));
+    loop.run_after(milliseconds(9100), std::bind(cancel, te3));
+    to_cancel = loop.run_every(milliseconds(5000), cancel_self);
 
     loop.loop();
     print("main loop exits");

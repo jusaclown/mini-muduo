@@ -1,4 +1,5 @@
 #include "src/TcpConnection.h"
+#include "src/EventLoop.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -9,6 +10,7 @@ TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_
     , sockfd_(sockfd)
     , channel_(std::make_unique<Channel>(loop_, sockfd_))
     , peer_addr_(peer_addr)
+    , state_(kConnecting)
 {
     channel_->set_read_callback(std::bind(&TcpConnection::handle_read_, this));
     channel_->set_write_callback(std::bind(&TcpConnection::handle_write_, this));
@@ -17,12 +19,12 @@ TcpConnection::TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_
 
 TcpConnection::~TcpConnection()
 {
-    if (sockfd_ != -1)
-        ::close(sockfd_);
+    ::close(sockfd_);
 }
 
 void TcpConnection::connect_established()
 {
+    set_state(kConnected);
     channel_->enable_reading();
     connection_callback_(shared_from_this());
 }
@@ -60,6 +62,20 @@ void TcpConnection::send(const std::string& message)
         if (!channel_->is_writing())
             channel_->enable_writing();
     }
+}
+
+void TcpConnection::shutdown()
+{
+    if (connected())
+    {
+        set_state(kDisconnecting);
+        if (!channel_->is_writing())
+        {
+            if (::shutdown(sockfd_, SHUT_WR) < 0)
+                handle_err("shutdown()");
+        }
+    }
+
 }
 
 void TcpConnection::set_tcp_no_delay(bool on)
@@ -121,11 +137,11 @@ void TcpConnection::handle_write_()
 void TcpConnection::handle_close_()
 {
     printf("close fd = %d\n", sockfd_);
-    
-    if (sockfd_ != -1)
-        close(sockfd_);
-    sockfd_ = -1;
 
-    if (close_callback_)
-        close_callback_(shared_from_this());
+    set_state(kDisconnected);
+    channel_->disable_all();
+
+    auto ptr = shared_from_this();
+    connection_callback_(ptr);
+    close_callback_(ptr);    //! 此时TcpConnection 已经析构了，还能用？
 }

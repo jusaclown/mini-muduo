@@ -1,7 +1,6 @@
 #pragma once
 
 #include "src/common.h"
-#include "src/TimerId.h"
 
 class EpollPoller;
 class TimerQueue;

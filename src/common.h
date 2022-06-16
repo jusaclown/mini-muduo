@@ -11,6 +11,7 @@
 class Channel;
 class TcpConnection;
 class Buffer;
+class Timer;
 
 using tcp_conn_ptr = std::shared_ptr<TcpConnection>;
 using message_callback = std::function<void(const tcp_conn_ptr&, Buffer&)>;
@@ -25,3 +26,5 @@ using channel_list = std::vector<Channel*>;
 using connection_map = std::map<int, tcp_conn_ptr>;
 
 using timer_clock = std::chrono::steady_clock;
+using timer_ptr = std::shared_ptr<Timer>;
+using TimerId = timer_ptr;
