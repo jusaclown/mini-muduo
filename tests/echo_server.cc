@@ -100,7 +100,7 @@ private:
             }
             else
             {
-                it = connection_list_.erase(it);    // 删除了之后node.position会不会受到影响
+                it = connection_list_.erase(it);    // 用的list，删除运算使指向删除位置的迭代器失效，但是不会失效其他迭代器
             }
         }
         dump_connection_list();

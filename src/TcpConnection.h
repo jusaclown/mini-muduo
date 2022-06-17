@@ -79,5 +79,5 @@ private:
     Buffer input_buffer_;   /* 接收缓冲区 */
     Buffer output_buffer_;  /* 发送缓冲区 */
     std::atomic<tcp_state_num> state_;
-    std::any context_;
+    std::any context_;  // !使用expired
 };
