@@ -77,6 +77,7 @@ timer_ptr TimerQueue::add_timer(timer_callback cb, timer_clock::time_point when,
 
 void TimerQueue::cancel(timer_ptr timer)
 {
+    // TODO: 采用延迟销毁，改进：当取消的定时器达到一半时，直接销毁，避免堆膨胀
     timer->set_cancelled(true);
 }
 
