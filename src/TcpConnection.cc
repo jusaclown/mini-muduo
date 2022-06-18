@@ -136,8 +136,6 @@ void TcpConnection::handle_write_()
 
 void TcpConnection::handle_close_()
 {
-    printf("close fd = %d\n", sockfd_);
-
     set_state(kDisconnected);
     channel_->disable_all();
 

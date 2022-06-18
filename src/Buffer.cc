@@ -4,6 +4,8 @@
 #include <sys/uio.h>
 #include <errno.h>
 
+const char Buffer::kCRLF[] = "\r\n";
+
 Buffer::Buffer(size_t initial_size)
     : buffer_(kCheapPrepend + initial_size)
     , reader_index_(kCheapPrepend)

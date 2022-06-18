@@ -3,6 +3,7 @@
 #include <vector>
 #include <cassert>
 #include <string>
+#include <algorithm>
 
 /** A buffer class modeled after org.jboss.netty.buffer.ChannelBuffer
  *
@@ -110,7 +111,7 @@ public:
         has_written(len);
     }
 
-    void append(const std::string& data)
+    void append(const std::string_view& data)
     {
         append(data.data(), data.size());
     }
@@ -129,6 +130,20 @@ public:
     /// It may implement with readv(2)
     /// @return result of read(2), @c errno is saved
     ssize_t readfd(int fd, int* saved_errno);
+
+    const char* find_crlf() const
+    {
+        const char* crlf = std::search(peek(), begin_write(), kCRLF, kCRLF + 2);
+        return crlf == begin_write() ? nullptr : crlf;
+    }
+
+    const char* find_crlf(const char* start) const
+    {
+        assert(peek() <= start);
+        assert(start <= begin_write());
+        const char* crlf = std::search(start, begin_write(), kCRLF, kCRLF + 2);
+        return crlf == begin_write() ? nullptr : crlf;            
+    }
     
 private:
     char* begin()
