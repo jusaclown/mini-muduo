@@ -14,7 +14,7 @@ Buffer::Buffer(size_t initial_size)
     assert(prependable_bytes() == kCheapPrepend);
 }
 
-Buffer::Buffer(Buffer& rhs)
+Buffer::Buffer(Buffer&& rhs)
     : buffer_(std::move(rhs.buffer_))
     , reader_index_(rhs.reader_index_)
     , writer_index_(rhs.writer_index_)
@@ -23,9 +23,14 @@ Buffer::Buffer(Buffer& rhs)
     rhs.writer_index_ = kCheapPrepend;
 }
 
-Buffer& Buffer::operator=(Buffer& rhs)
+Buffer& Buffer::operator=(Buffer&& rhs)
 {
-    this->swap(rhs);
+    if (&rhs != this)
+    {
+        buffer_ = std::move(rhs.buffer_);
+        reader_index_ = rhs.reader_index_;
+        writer_index_ = rhs.writer_index_;
+    }
     return *this;
 }
 

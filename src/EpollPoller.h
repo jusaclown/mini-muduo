@@ -13,8 +13,8 @@ public:
     EpollPoller(EventLoop* loop);
     ~EpollPoller();
 
-    EpollPoller(const EpollPoller&);
-    EpollPoller& operator=(const EpollPoller&);
+    EpollPoller(const EpollPoller&) = delete;
+    EpollPoller& operator=(const EpollPoller&) = delete;
 
     void poller(channel_list& active_channels);
     void update_channel(Channel* Channel);

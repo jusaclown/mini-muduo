@@ -15,8 +15,8 @@ public:
     TcpConnection(EventLoop* loop, int sockfd, const struct sockaddr_in& peer_addr);
     ~TcpConnection();
 
-    TcpConnection(const TcpConnection&);
-    TcpConnection& operator=(const TcpConnection&);
+    TcpConnection(const TcpConnection&) = delete;
+    TcpConnection& operator=(const TcpConnection&) = delete;
 
     void set_message_callback(message_callback cb)
     {

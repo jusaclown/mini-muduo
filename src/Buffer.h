@@ -26,8 +26,8 @@ public:
     Buffer(const Buffer&) = default;
     Buffer& operator=(const Buffer&) = default;
 
-    Buffer(Buffer& buffer);
-    Buffer& operator=(Buffer& buffer);
+    Buffer(Buffer&& buffer);
+    Buffer& operator=(Buffer&& buffer);
 
     void swap(Buffer& rhs);
 
@@ -108,6 +108,11 @@ public:
         ensure_writabel_bytes(len);
         std::copy(data, data + len, begin_write());
         has_written(len);
+    }
+
+    void append(const std::string& data)
+    {
+        append(data.data(), data.size());
     }
 
     void ensure_writabel_bytes(size_t len)
