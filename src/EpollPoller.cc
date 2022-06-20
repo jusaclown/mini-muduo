@@ -6,6 +6,7 @@
 
 const int kNew = -1;
 const int kAdded = 1;
+const int kDeleted = 2;
 
 EpollPoller::EpollPoller(EventLoop* loop)
     : loop_(loop)
@@ -44,23 +45,31 @@ void EpollPoller::poller(channel_list& active_channels)
 void EpollPoller::update_channel(Channel* channel)
 {
     const int idx = channel->index();
-    if (idx == kNew)
+    if (idx == kNew || idx == kDeleted)
     {
         channel->set_index(kAdded);
-        struct epoll_event ev;
-        memset(&ev, 0, sizeof(ev));
-        ev.data.ptr = channel;
-        ev.events = channel->events();
-        if (epoll_ctl(epollfd_, EPOLL_CTL_ADD, channel->fd(), &ev) < 0)
-            handle_err("epoll_ctl");  
+        update_(EPOLL_CTL_ADD, channel);
     }
     else
     {
-        struct epoll_event ev;
-        memset(&ev, 0, sizeof(ev));
-        ev.data.ptr = channel;
-        ev.events = channel->events();        
-        if (epoll_ctl(epollfd_, EPOLL_CTL_MOD, channel->fd(), &ev) < 0)
-            handle_err("epoll_ctl"); 
+        if (channel->is_none_event())
+        {
+            update_(EPOLL_CTL_DEL, channel);
+            channel->set_index(kDeleted);
+        }
+        else
+        {
+            update_(EPOLL_CTL_MOD, channel);
+        }
     }
+}
+
+void EpollPoller::update_(int operation, Channel* channel)
+{
+    struct epoll_event ev;
+    memset(&ev, 0, sizeof(ev));
+    ev.data.ptr = channel;
+    ev.events = channel->events();
+    if (epoll_ctl(epollfd_, operation, channel->fd(), &ev) < 0)
+        handle_err("epoll_ctl"); 
 }

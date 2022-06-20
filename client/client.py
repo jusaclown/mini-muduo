@@ -32,7 +32,7 @@ class myThread (threading.Thread):
 
 # 创建新线程
 thread1 = myThread("Thread-1", 2, "lalalala demaxiya "*10)      # 2s close
-thread2 = myThread("Thread-2", 10, "lalalala lulalula "*10)     # 5s shutdown 10s close
+thread2 = myThread("Thread-2", 10, "lalalala lulalula "*10000000)     # 5s shutdown 10s close
 thread3 = myThread("Thread-3", 3, "lalalala lulalula "*10)      # 8s shutdown 9s close
 
 # 开启新线程

@@ -17,8 +17,10 @@ public:
     EpollPoller& operator=(const EpollPoller&) = delete;
 
     void poller(channel_list& active_channels);
-    void update_channel(Channel* Channel);
+    void update_channel(Channel* channel);
 
+private:
+    void update_(int operation, Channel* channel);
     
 private:
     static const int kInitEventListSize = 16;

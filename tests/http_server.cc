@@ -5,7 +5,7 @@
 #include "src/TcpConnection.h"
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <cassert>
 #include <iostream>
 #include <functional>
@@ -142,7 +142,7 @@ public:
         return result;
     }
 
-    const std::unordered_map<std::string, std::string>&
+    const std::map<std::string, std::string>&
     headers() const { return headers_; }
 
     void swap(HttpRequest& other)
@@ -161,7 +161,7 @@ private:
     std::string path_;
     std::string query_;
     timer_clock::time_point receive_time_;
-    std::unordered_map<std::string, std::string> headers_;
+    std::map<std::string, std::string> headers_;
 };
 
 
@@ -273,7 +273,7 @@ private:
     std::string status_message_;
     bool close_connection_;
     std::string body_;
-    std::unordered_map<std::string, std::string> headers_;
+    std::map<std::string, std::string> headers_;
 };
 
 
@@ -463,13 +463,13 @@ public:
 private:
     void on_connection(const tcp_conn_ptr& conn)
     {
-        char buf[10];
-        auto client_addr = conn->peer_addr();
-        printf("connection from [%s : %d], socket fd = %d is %s\n",
-            inet_ntop(AF_INET, &client_addr.sin_addr, buf, sizeof(buf)),
-            ntohs(client_addr.sin_port),
-            conn->fd(),
-            conn->connected() ? "up" : "down");
+        // char buf[10];
+        // auto client_addr = conn->peer_addr();
+        // printf("connection from [%s : %d], socket fd = %d is %s\n",
+        //     inet_ntop(AF_INET, &client_addr.sin_addr, buf, sizeof(buf)),
+        //     ntohs(client_addr.sin_port),
+        //     conn->fd(),
+        //     conn->connected() ? "up" : "down");
         
         if (conn->connected())
         {

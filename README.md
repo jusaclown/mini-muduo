@@ -40,4 +40,13 @@ Q: 什么时候下会用到发送缓冲区？
 使用小根堆实现定时器  
 在EchoServer中踢掉长时间未活动的连接  
 
+## V0.9
+**fix bug**:  
+* 在v0.7版本中echo server数据过大无法完全发送，原因是Channel中未处理EPOLLOUT事件  
+
+完善单线程reactor   
+加入HTTP Server  
+
+![](./picture/%E5%8D%95%E7%BA%BF%E7%A8%8B.png)
+
 > 框架负责从套接字读取数据给用户或者把用户的数据通过套接字发送出去

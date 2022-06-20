@@ -22,6 +22,7 @@ Acceptor::Acceptor(EventLoop* loop, std::string ip, uint16_t port)
 
 Acceptor::~Acceptor()
 {
+    listen_channel_.disable_all();
     ::close(listenfd_);
     ::close(idlefd_);
 }

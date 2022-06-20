@@ -72,10 +72,12 @@ void TcpConnection::shutdown()
         if (!channel_->is_writing())
         {
             if (::shutdown(sockfd_, SHUT_WR) < 0)
-                handle_err("shutdown()");
+            {
+                // handle_err("shutdown()");
+                printf("shutdown(): %s \n", strerror(errno));
+            }
         }
     }
-
 }
 
 void TcpConnection::set_tcp_no_delay(bool on)
@@ -124,12 +126,12 @@ void TcpConnection::handle_write_()
             }
             else
             {
-                printf("I am going to write more data");
+                printf("I am going to write more data\n");
             }
         }
         else
         {
-            printf("send(): some error happened!");
+            printf("send(): some error happened!\n");
         }
     }
 }
@@ -141,5 +143,5 @@ void TcpConnection::handle_close_()
 
     auto ptr = shared_from_this();
     connection_callback_(ptr);
-    close_callback_(ptr);    //! 此时TcpConnection 已经析构了，还能用？
+    close_callback_(ptr);
 }
