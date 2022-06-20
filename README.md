@@ -42,7 +42,7 @@ Q: 什么时候下会用到发送缓冲区？
 
 ## V0.9
 **fix bug**:  
-* 在v0.7版本中echo server数据过大无法完全发送，原因是Channel中未处理EPOLLOUT事件  
+* 在v0.7版本中echo server数据过大无法完全发送，原因是Channel中未处理EPOLLOUT事件，也就没有用到发送缓冲区  
 
 完善单线程reactor   
 加入HTTP Server  
