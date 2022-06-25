@@ -63,8 +63,7 @@ private:
     void send_message(const tcp_conn_ptr& conn, Buffer& buffer)
     {
         printf("send_message() by %d\n", conn->fd());
-        std::string msg = buffer.retrieve_all_as_string();
-        conn->send(msg);
+        conn->send(buffer.retrieve_all_as_string());
 
         Node* node = std::any_cast<Node>(conn->get_mutable_context());
         node->last_receive_time = timer_clock::now();

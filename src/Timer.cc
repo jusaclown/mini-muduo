@@ -21,6 +21,6 @@ void Timer::restart(timer_clock::time_point now)
     }
     else
     {
-        expiration_ = timer_clock::time_point::min();
+        expiration_ = timer_clock::time_point();
     }
 }

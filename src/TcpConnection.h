@@ -44,6 +44,7 @@ public:
     void connect_established();
 
     void send(const std::string& message);
+    void send(std::string&& message);
     void shutdown();
 
     void set_tcp_no_delay(bool on);
@@ -64,7 +65,8 @@ private:
     enum tcp_state_num { kDisconnected, kConnecting, kConnected, kDisconnecting };
     void set_state(tcp_state_num state) { state_.store(state, std::memory_order_relaxed); }
 
-
+    void send_(const void* message, size_t len);
+    
 private:
     static const size_t kMaxBuffer = 1024;
 

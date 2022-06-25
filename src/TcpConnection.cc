@@ -25,20 +25,37 @@ TcpConnection::~TcpConnection()
 void TcpConnection::connect_established()
 {
     set_state(kConnected);
+    channel_->tie(shared_from_this());
     channel_->enable_reading();
     connection_callback_(shared_from_this());
 }
 
 void TcpConnection::send(const std::string& message)
 {
+    if (state_ == kConnected)
+    {
+        send_(message.data(), message.size());
+    }
+}
+
+void TcpConnection::send(std::string&& message)
+{
+    if (state_ == kConnected)
+    {
+        send_(message.data(), message.size());        
+    }
+}
+
+void TcpConnection::send_(const void* message, size_t len)
+{
     ssize_t nwrote = 0;
-    size_t remaining = message.size();
+    size_t remaining = len;
     /* 如果fd没有关注可写事件并且输出缓冲区无数据，则直接发送 
        ? !channel_->is_writing() 这里是针对什么情况，只用后面的判定不行吗？
      */
     if (!channel_->is_writing() && output_buffer_.readable_bytes() == 0)
     {
-        nwrote = ::send(channel_->fd(), message.data(), message.size(), 0);
+        nwrote = ::send(channel_->fd(), message, len, 0);
         if (nwrote >= 0)
         {
             remaining -= nwrote;
@@ -50,7 +67,7 @@ void TcpConnection::send(const std::string& message)
         else /* nwrote < 0 */
         {
             nwrote = 0;
-            printf("There was a mistake(send_num != recv_nums), but we decided to continue\n");
+            printf("There was a mistake(%s), but we decided to continue\n", strerror(errno));
         }
     }
 
@@ -58,7 +75,7 @@ void TcpConnection::send(const std::string& message)
     /* 如果没有发送完，则将剩余数据添加到输出缓冲区并关注可写事件 */
     if (remaining > 0)
     {
-        output_buffer_.append(message.data() + nwrote, message.size() - nwrote);
+        output_buffer_.append(static_cast<const char*>(message) + nwrote, remaining);
         if (!channel_->is_writing())
             channel_->enable_writing();
     }

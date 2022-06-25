@@ -144,8 +144,7 @@ void TimerQueue::reset_(const std::vector<timer_ptr>& expired, timer_clock::time
         next_expired = timers_.top()->expiration();
     }
 
-    /* 什么情况下会 == min()? */
-    if (next_expired != timer_clock::time_point::min())
+    if (next_expired.time_since_epoch() > timer_clock::time_point::duration::zero())
     {
         reset_timerfd(timerfd_, next_expired);
     }

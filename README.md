@@ -43,10 +43,16 @@ Q: 什么时候下会用到发送缓冲区？
 ## V0.9
 **fix bug**:  
 * 在v0.7版本中echo server数据过大无法完全发送，原因是Channel中未处理EPOLLOUT事件，也就没有用到发送缓冲区  
-
+* 当定时器队列为空时，仍然会重设定时器。TimerQueue:147
+* 使TcpConnection的生存期长于channel的hand_read
 完善单线程reactor   
 加入HTTP Server  
 
 ![](./picture/%E5%8D%95%E7%BA%BF%E7%A8%8B.png)
+
+> 单线程下muduo的性能是这个的4倍。  
+> 改善：  
+> 1. 修改TcpConnection的send函数  效果不大
+
 
 > 框架负责从套接字读取数据给用户或者把用户的数据通过套接字发送出去
