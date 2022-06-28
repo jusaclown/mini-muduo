@@ -26,6 +26,12 @@ endif()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+# SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+
+find_package(Threads REQUIRED)
+
 # ---------------------------------------------------------------------------------------
 # Static library
 # ---------------------------------------------------------------------------------------
@@ -39,9 +45,12 @@ add_library(mini_muduo STATIC
     src/Buffer.cc
     src/Timer.cc
     src/TimerQueue.cc
+    src/EventLoopThread.cc
+    src/EventLoopThreadPool.cc
 )
 muduo_enable_warnings(mini_muduo)
 target_include_directories(mini_muduo PUBLIC ${PROJECT_SOURCE_DIR})
+target_link_libraries(mini_muduo PUBLIC Threads::Threads)
 
 # ---------------------------------------------------------------------------------------
 # Build binaries

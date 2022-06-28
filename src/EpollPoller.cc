@@ -44,6 +44,7 @@ void EpollPoller::poller(channel_list& active_channels)
 
 void EpollPoller::update_channel(Channel* channel)
 {
+    loop_->assert_in_loop_thread();
     const int idx = channel->index();
     if (idx == kNew || idx == kDeleted)
     {

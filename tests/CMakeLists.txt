@@ -8,5 +8,8 @@ target_link_libraries(test_timer PRIVATE mini_muduo)
 
 add_executable(http_server http_server.cc)
 target_link_libraries(http_server PRIVATE mini_muduo)
-muduo_enable_warnings(http_server)
-muduo_enable_sanitizer(http_server)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    muduo_enable_warnings(http_server)
+    muduo_enable_sanitizer(http_server)
+endif()

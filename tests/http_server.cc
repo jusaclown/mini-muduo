@@ -460,6 +460,11 @@ public:
         server_.start();
     }
     
+    void set_thread_num(int num_threads)
+    {
+        server_.set_thread_num(num_threads);
+    }
+    
 private:
     void on_connection(const tcp_conn_ptr& conn)
     {
@@ -502,7 +507,7 @@ private:
         http_callback_(req, response);
         Buffer buf;
         response.append_buffer(buf);
-        conn->send(buf.retrieve_all_as_string());   // TODO: 直接发送，别额外复制
+        conn->send(&buf);   // TODO: 直接发送，别额外复制
         if (response.close_connection())
         {
             conn->shutdown();
@@ -551,7 +556,9 @@ int main()
     EventLoop loop;
     HttpServer server(&loop, "0.0.0.0", 10087);
     server.set_http_callback(on_request);
+    server.set_thread_num(0);
     server.start();
+    // loop.run_after(std::chrono::seconds(15), [&]() {loop.quit();});
     loop.loop();
     return 0;
 }

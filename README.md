@@ -1,3 +1,6 @@
+本文参考[mini-muduo](https://blog.csdn.net/voidccc/article/details/8719752)，相较于mini-muduo中选择虚函数，我还是参照muduo库选择用回调，
+这样后续能更方便的了解muduo库
+
 ## v0.1
 
 这是一个echo服务器，只是将客户端发来的消息返回给他  
@@ -45,6 +48,7 @@ Q: 什么时候下会用到发送缓冲区？
 * 在v0.7版本中echo server数据过大无法完全发送，原因是Channel中未处理EPOLLOUT事件，也就没有用到发送缓冲区  
 * 当定时器队列为空时，仍然会重设定时器。TimerQueue:147
 * 使TcpConnection的生存期长于channel的hand_read
+
 完善单线程reactor   
 加入HTTP Server  
 
@@ -53,6 +57,19 @@ Q: 什么时候下会用到发送缓冲区？
 > 单线程下muduo的性能是这个的4倍。  
 > 改善：  
 > 1. 修改TcpConnection的send函数  效果不大
+> 2. 取消muduo_enable_sanitizer，但muduo的性能还是这个的2倍
 
 
+## v1.0
+加入多线程  
+用one loop per thread的思想实现多线程TcpServer的关键步骤是在新建TcpConnection时从event loop pool里选一个loop给TcpConnection用。
+也就是说多线程TcpServer自己的EventLoop只用来接受新连接，而新连接会用其他EventLoop来执行IO。结构类似下图：
+
+<img src="./picture/model.png" style="zoom:50%;" />  
+
+[网上](https://blog.csdn.net/znzxc/article/details/85318265)发现的一个更为直观的图  
+![](./picture/one_loop_per_thread.png)
+
+相较于单线程，多线程需要处理各种竞态条件，muduo加入了大量的限定，确保一个线程仅有一个EventLoop循环，某些函数只能在线程内部调用。
+同时利用runInLoop函数，当执行某个回调函数时，如果是当前线程，则直接执行，否则加入到队列中，唤醒线程在执行
 > 框架负责从套接字读取数据给用户或者把用户的数据通过套接字发送出去

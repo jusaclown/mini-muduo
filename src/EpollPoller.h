@@ -5,7 +5,6 @@
 #include "src/EventLoop.h"
 
 #include <vector>
-#include <map>
 
 class EpollPoller
 {

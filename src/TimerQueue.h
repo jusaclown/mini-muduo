@@ -29,6 +29,9 @@ private:
     void reset_(const std::vector<timer_ptr>& expired, timer_clock::time_point now);
     bool insert_(timer_ptr timer);
 
+    void add_timer_in_loop_(timer_ptr timer);
+    void cancel_in_loop_(timer_ptr timer);
+
 private:
     struct timer_cmp
     {

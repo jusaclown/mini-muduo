@@ -24,7 +24,8 @@ TcpConnection::~TcpConnection()
 
 void TcpConnection::connect_established()
 {
-    set_state(kConnected);
+    loop_->assert_in_loop_thread();
+    set_state_(kConnected);
     channel_->tie(shared_from_this());
     channel_->enable_reading();
     connection_callback_(shared_from_this());
@@ -34,7 +35,15 @@ void TcpConnection::send(const std::string& message)
 {
     if (state_ == kConnected)
     {
-        send_(message.data(), message.size());
+        if (loop_->is_in_loop_thread())
+        {
+            send_in_loop_(message);
+        }
+        else
+        {
+            void (TcpConnection:: *fp)(const std::string& message) = &TcpConnection::send_in_loop_;
+            loop_->run_in_loop(std::bind(fp, this, message));
+        }
     }
 }
 
@@ -42,12 +51,43 @@ void TcpConnection::send(std::string&& message)
 {
     if (state_ == kConnected)
     {
-        send_(message.data(), message.size());        
+        if (loop_->is_in_loop_thread())
+        {
+            send_in_loop_(std::move(message));
+        }
+        else
+        {
+            void (TcpConnection:: *fp)(const std::string& message) = &TcpConnection::send_in_loop_;
+            loop_->run_in_loop(std::bind(fp, this, std::move(message)));
+        }
     }
 }
 
-void TcpConnection::send_(const void* message, size_t len)
+void TcpConnection::send(Buffer* buf)
 {
+    if (state_ == kConnected)
+    {
+        if (loop_->is_in_loop_thread())
+        {
+            send_in_loop_(buf->peek(), buf->readable_bytes());
+            buf->retrieve_all();
+        }
+        else
+        {
+            void (TcpConnection:: *fp)(const std::string& message) = &TcpConnection::send_in_loop_;
+            loop_->run_in_loop(std::bind(fp, this, buf->retrieve_all_as_string()));
+        }
+    }
+}
+
+void TcpConnection::send_in_loop_(const std::string& message)
+{
+    send_in_loop_(message.data(), message.size());
+}
+
+void TcpConnection::send_in_loop_(const void* message, size_t len)
+{
+    loop_->assert_in_loop_thread();
     ssize_t nwrote = 0;
     size_t remaining = len;
     /* 如果fd没有关注可写事件并且输出缓冲区无数据，则直接发送 
@@ -85,14 +125,20 @@ void TcpConnection::shutdown()
 {
     if (connected())
     {
-        set_state(kDisconnecting);
-        if (!channel_->is_writing())
+        set_state_(kDisconnecting);
+        loop_->run_in_loop(std::bind(&TcpConnection::shutdown_in_loop_, this));
+    }
+}
+
+void TcpConnection::shutdown_in_loop_()
+{
+    loop_->assert_in_loop_thread();
+    if (!channel_->is_writing())
+    {
+        if (::shutdown(sockfd_, SHUT_WR) < 0)
         {
-            if (::shutdown(sockfd_, SHUT_WR) < 0)
-            {
-                // handle_err("shutdown()");
-                printf("shutdown(): %s \n", strerror(errno));
-            }
+            // handle_err("shutdown()");
+            printf("shutdown(): %s \n", strerror(errno));
         }
     }
 }
@@ -111,6 +157,7 @@ void TcpConnection::set_keep_alive(bool on)
 
 void TcpConnection::handle_read_()
 {
+    loop_->assert_in_loop_thread();
     int saved_errno = 0;
     ssize_t recv_nums = input_buffer_.readfd(sockfd_, &saved_errno);
 
@@ -126,6 +173,7 @@ void TcpConnection::handle_read_()
 
 void TcpConnection::handle_write_()
 {
+    loop_->assert_in_loop_thread();
     if (channel_->is_writing())
     {
         auto n = ::send(channel_->fd(), output_buffer_.peek(), output_buffer_.readable_bytes(), 0);
@@ -155,7 +203,8 @@ void TcpConnection::handle_write_()
 
 void TcpConnection::handle_close_()
 {
-    set_state(kDisconnected);
+    loop_->assert_in_loop_thread();
+    set_state_(kDisconnected);
     channel_->disable_all();
 
     auto ptr = shared_from_this();

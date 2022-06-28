@@ -29,6 +29,7 @@ Acceptor::~Acceptor()
 
 void Acceptor::listen()
 {
+    loop_->assert_in_loop_thread();
     int ret = ::listen(listenfd_, kMaxListen);
     if (ret < 0)
         handle_err("listen");
@@ -44,6 +45,7 @@ int Acceptor::create_and_bind_(std::string ip, uint16_t port)
     
     int optval = 1;
     ::setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, static_cast<socklen_t>(sizeof(optval)));
+    ::setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, &optval, static_cast<socklen_t>(sizeof(optval)));
     
     struct sockaddr_in server_address;
     memset(&server_address, 0, sizeof(server_address));
@@ -61,6 +63,7 @@ int Acceptor::create_and_bind_(std::string ip, uint16_t port)
 
 void Acceptor::handle_read_()
 {
+    loop_->assert_in_loop_thread();
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = static_cast<socklen_t>(sizeof(client_addr));
     

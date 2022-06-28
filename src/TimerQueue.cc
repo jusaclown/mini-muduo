@@ -1,5 +1,6 @@
 #include "src/TimerQueue.h"
 #include "src/Timer.h"
+#include "src/EventLoop.h"
 
 #include <sys/timerfd.h>
 #include <unistd.h>
@@ -66,17 +67,29 @@ TimerQueue::~TimerQueue()
 timer_ptr TimerQueue::add_timer(timer_callback cb, timer_clock::time_point when, timer_clock::duration interval)
 {
     auto timer = std::make_shared<Timer>(std::move(cb), when, interval);
+    loop_->run_in_loop(std::bind(&TimerQueue::add_timer_in_loop_, this, timer));
+    return timer;  
+}
+
+void TimerQueue::cancel(timer_ptr timer)
+{
+    loop_->run_in_loop(std::bind(&TimerQueue::cancel_in_loop_, this, std::move(timer)));
+}
+
+void TimerQueue::add_timer_in_loop_(timer_ptr timer)
+{
+    loop_->assert_in_loop_thread();
     bool earliest_changed = insert_(timer);
     if (earliest_changed)
     {
         /* 如果插入的定时器最早到期，则需重置定时器的超时时刻 */
         reset_timerfd(timerfd_, timer->expiration());
-    }
-    return timer;
+    } 
 }
 
-void TimerQueue::cancel(timer_ptr timer)
+void TimerQueue::cancel_in_loop_(timer_ptr timer)
 {
+    loop_->assert_in_loop_thread();
     // TODO: 采用延迟销毁，改进：当取消的定时器达到一半时，直接销毁，避免堆膨胀
     timer->set_cancelled(true);
 }
@@ -90,6 +103,7 @@ void TimerQueue::handle_read_()
      * 3. 执行超时定时器回调函数
      * 4. 判断是否重复定时
      */
+    loop_->assert_in_loop_thread();
     timer_clock::time_point now = timer_clock::now();
     read_timerfd(timerfd_);
     std::vector<timer_ptr> expired = get_expired_(now);
@@ -152,6 +166,7 @@ void TimerQueue::reset_(const std::vector<timer_ptr>& expired, timer_clock::time
 
 bool TimerQueue::insert_(timer_ptr timer)
 {
+    loop_->assert_in_loop_thread();
     bool earliest_changed = false;
     auto when = timer->expiration();
     

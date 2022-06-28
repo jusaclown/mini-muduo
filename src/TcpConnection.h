@@ -45,6 +45,7 @@ public:
 
     void send(const std::string& message);
     void send(std::string&& message);
+    void send(Buffer* buf);
     void shutdown();
 
     void set_tcp_no_delay(bool on);
@@ -63,10 +64,12 @@ private:
     void handle_close_();
 
     enum tcp_state_num { kDisconnected, kConnecting, kConnected, kDisconnecting };
-    void set_state(tcp_state_num state) { state_.store(state, std::memory_order_relaxed); }
+    void set_state_(tcp_state_num state) { state_.store(state, std::memory_order_relaxed); }
 
-    void send_(const void* message, size_t len);
-    
+    void send_in_loop_(const void* message, size_t len);
+    void send_in_loop_(const std::string& message);
+    void shutdown_in_loop_();
+
 private:
     static const size_t kMaxBuffer = 1024;
 
@@ -75,9 +78,10 @@ private:
     std::unique_ptr<Channel> channel_;
     struct sockaddr_in peer_addr_;
     message_callback message_callback_;                 /* 消息到来 */
-    close_callback close_callback_;                     /* 连接的断开 */
+    close_callback close_callback_;                     /* 连接的断开 被设置为TcpServer::remove_connection */
     connection_callback connection_callback_;           /* 连接的建立 */
     write_complete_callback write_complete_callback_;   /* 消息发送完毕 */
+    // high_water_mark_callback high_water_mark_callback_; /* 高水位回调，当输出缓冲区的长度大于指定大小，就会触发*/
     Buffer input_buffer_;   /* 接收缓冲区 */
     Buffer output_buffer_;  /* 发送缓冲区 */
     std::atomic<tcp_state_num> state_;
